@@ -69,6 +69,19 @@ do
             break;
 
         case 6:
+            bool catchChoice;
+            char save;
+            do
+            {
+                Console.Write("Deseja salvar a agenda antes de sair? [N/S]: ");
+                catchChoice = char.TryParse(Console.ReadLine().ToUpper(), out save);
+            } while (save != 'S' && save != 'N');
+            
+            if(save == 'S')
+            {
+                DoBackup();
+                Console.WriteLine("\nAGENDA SALVA!\n");
+            }
             System.Environment.Exit(0);
             break;
 
@@ -290,6 +303,6 @@ bool LoadBackup()
         phonebook.Add(contact);
     }
     sr.Close();
-    Console.WriteLine("\nESTANTE CARREGADA E ATUALIZADA!\n");
+    Console.WriteLine("\nAGENDA CARREGADA E ATUALIZADA!\n");
     return true;
 }
