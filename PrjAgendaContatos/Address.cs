@@ -49,5 +49,10 @@ namespace PrjAgendaContatos
                     "\n         CEP: " + PostalCode +
                     "\n        País: " + Country + "\n\n";
         }
+
+        public string ToBackup()
+        {
+            return $"{Street}|{City}|{State}|{PostalCode}|{Country}";
+        }
     }
 }

@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.Design;
+﻿using System;
+using System.ComponentModel.Design;
 using System.Runtime.InteropServices;
 using PrjAgendaContatos;
 
 List<Contact> phonebook = new List<Contact>();
 
+LoadBackup();
 
 int op;
 do
@@ -25,7 +27,7 @@ do
             char? choiceLetter;
 
             Console.WriteLine("\nAperte ENTER para imprimir toda lista de contatos ou Digite uma letra para imprimir contatos com tal inicial: ");
-            choice = Console.ReadLine();
+            choice = Console.ReadLine().ToUpper();
 
             if (char.TryParse(choice, out char letter))
                 choiceLetter = letter;
@@ -59,6 +61,14 @@ do
             break;
 
         case 5:
+            Console.Clear();
+            if (DoBackup())
+                Console.WriteLine("\nAGENDA SALVA!\n");
+            else
+                Console.WriteLine("\nFALHA AO SALVAR A AGENDA!\n");
+            break;
+
+        case 6:
             System.Environment.Exit(0);
             break;
 
@@ -67,7 +77,7 @@ do
             break;
     }
 
-} while (op != 5);
+} while (op != 6);
 
 void EditContact()
 {
@@ -86,11 +96,13 @@ void EditContact()
 
     if (finded != null)
     {
-        string name, phone, street, city, state, postalCode, country;
+        string name, phone, email, street, city, state, postalCode, country;
         Console.WriteLine("Informe o novo nome: ");
         name = Console.ReadLine();
         Console.WriteLine("Informe o novo telefone: ");
         phone = Console.ReadLine();
+        Console.WriteLine("Informe o novo e-mail: ");
+        email = Console.ReadLine();
         Console.WriteLine("Informe o novo logradouro: ");
         street = Console.ReadLine();
         Console.WriteLine("Informe a nova cidade: ");
@@ -116,6 +128,8 @@ void EditContact()
             finded.Name = name;
         if (phone != "")
             finded.Phone = phone;
+        if (email != "")
+            finded.Email = email;
         if (street != "")
             finded.Address.EditStreet(street);
         if (city != "")
@@ -171,6 +185,8 @@ Contact CreatContact()
     string n = Console.ReadLine();
     Console.WriteLine("Informe o telefone: ");
     string t = Console.ReadLine();
+    Console.WriteLine("Informe o e-mail: ");
+    string e = Console.ReadLine();
 
     List<Contact> alreadyExists;
     alreadyExists = SearchContact(n, t);
@@ -183,7 +199,7 @@ Contact CreatContact()
         return null;
     }
 
-    Contact contact = new Contact(n, t);
+    Contact contact = new Contact(n, t, e);
     return contact;
 
 }
@@ -214,9 +230,66 @@ int Menu()
                         "\n2 - Imprimir Lista de Contatos" +
                         "\n3 - Editar Contato" +
                         "\n4 - Remover Contato" +
-                        "\n5 - Sair" +
+                        "\n5 - Salvar Agenda" +
+                        "\n6 - Sair" +
                         "\n\nEscolha uma opção:");
     
     var xpto = int.Parse(Console.ReadLine());
     return xpto;
+}
+
+bool DoBackup()
+{
+    StreamWriter sw = new StreamWriter("backup.txt");
+
+    sw.WriteLine("Name|Phone|Email|Street|City|State|PostalCode|Country");
+
+    foreach (Contact contact in phonebook)
+        sw.WriteLine(contact.ToBackup());
+
+    sw.Close();
+
+    LoadBackup();
+
+    return true;
+}
+
+bool LoadBackup()
+{
+    if (!File.Exists("backup.txt"))
+    {
+        Console.WriteLine("\nAGENDA NÃO EXISTE!\n");
+        return false;
+    }
+
+    phonebook.Clear();
+
+    StreamReader sr = new StreamReader("backup.txt");
+    sr.ReadLine();
+    while (!sr.EndOfStream)
+    {
+        string properties = sr.ReadLine();
+        string[] property = properties.Split('|');
+
+        string name = property[0];
+        string phone = property[1];
+        string email = property[2];
+        string street = property[3];
+        string city = property[4];
+        string state = property[5];
+        string postalCode = property[6];
+        string country = property[7];
+
+
+        Contact contact = new(name, phone, email);
+        contact.Address.EditStreet(street);
+        contact.Address.EditCity(city);
+        contact.Address.EditState(state);
+        contact.Address.EditPostalCode(postalCode);
+        contact.Address.EditCountry(country);
+        phonebook.Add(contact);
+    }
+    sr.Close();
+    Console.WriteLine("\nESTANTE CARREGADA E ATUALIZADA!\n");
+    return true;
 }
